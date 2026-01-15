@@ -14,6 +14,7 @@ import os
 # Import configuration
 from config import Config
 
+
 # Import database
 from models.database import init_db
 
