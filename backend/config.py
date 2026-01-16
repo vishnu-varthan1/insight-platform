@@ -1,5 +1,5 @@
 """
-AMEP Configuration File
+AMEP Configuration File - MongoDB Version
 All configuration settings for the application
 
 Location: backend/config.py
@@ -31,24 +31,38 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     
     # ========================================================================
-    # DATABASE CONFIGURATION
+    # MONGODB CONFIGURATION
     # ========================================================================
     
-    # PostgreSQL connection string
-    DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'postgresql://amep_user:password@localhost:5432/amep_db'
+    # MongoDB connection string
+    MONGODB_URI = os.getenv(
+        'MONGODB_URI',
+        'mongodb://localhost:27017/'
     )
     
-    # SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = DATABASE_URI
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': 10,
-        'pool_recycle': 3600,
-        'pool_pre_ping': True,
-        'max_overflow': 20
+    # MongoDB database name
+    MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME', 'amep_db')
+    
+    # MongoDB connection settings
+    MONGODB_SETTINGS = {
+        'host': MONGODB_URI,
+        'db': MONGODB_DB_NAME,
+        'connect': True,
+        'maxPoolSize': 50,
+        'minPoolSize': 10,
+        'serverSelectionTimeoutMS': 5000,
+        'socketTimeoutMS': 30000,
     }
+    
+    # # MongoDB Atlas settings (if using cloud)
+    # MONGODB_USERNAME = os.getenv('MONGODB_USERNAME')
+    # MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD')
+    # MONGODB_CLUSTER = os.getenv('MONGODB_CLUSTER')
+    
+    # # If using MongoDB Atlas, construct URI
+    # if MONGODB_USERNAME and MONGODB_PASSWORD and MONGODB_CLUSTER:
+    #     MONGODB_URI = f"mongodb+srv://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@{MONGODB_CLUSTER}/{MONGODB_DB_NAME}?retryWrites=true&w=majority"
+    #     MONGODB_SETTINGS['host'] = MONGODB_URI
     
     # ========================================================================
     # REDIS CONFIGURATION (for caching and sessions)
@@ -112,9 +126,9 @@ class Config:
     DKVMN_CORRELATION_THRESHOLD = float(os.getenv('DKVMN_CORRELATION_THRESHOLD', 0.3))
     
     # Mastery thresholds (BR3: Efficiency optimization)
-    MASTERY_THRESHOLD_SKIP = float(os.getenv('MASTERY_THRESHOLD_SKIP', 85.0))  # Skip if mastered
-    MASTERY_THRESHOLD_LIGHT = float(os.getenv('MASTERY_THRESHOLD_LIGHT', 60.0))  # Light review
-    MASTERY_THRESHOLD_FOCUS = float(os.getenv('MASTERY_THRESHOLD_FOCUS', 60.0))  # Focused practice
+    MASTERY_THRESHOLD_SKIP = float(os.getenv('MASTERY_THRESHOLD_SKIP', 85.0))
+    MASTERY_THRESHOLD_LIGHT = float(os.getenv('MASTERY_THRESHOLD_LIGHT', 60.0))
+    MASTERY_THRESHOLD_FOCUS = float(os.getenv('MASTERY_THRESHOLD_FOCUS', 60.0))
     
     # ========================================================================
     # ADAPTIVE PRACTICE CONFIGURATION (BR2)
@@ -130,7 +144,7 @@ class Config:
     DIFFICULTY_ADJUSTMENT_ALPHA = float(os.getenv('DIFFICULTY_ADJUSTMENT_ALPHA', 0.01))
     
     # Session defaults
-    DEFAULT_SESSION_DURATION = int(os.getenv('DEFAULT_SESSION_DURATION', 30))  # minutes
+    DEFAULT_SESSION_DURATION = int(os.getenv('DEFAULT_SESSION_DURATION', 30))
     MAX_SESSION_DURATION = int(os.getenv('MAX_SESSION_DURATION', 180))
     
     # ========================================================================
@@ -138,12 +152,12 @@ class Config:
     # ========================================================================
     
     # Disengagement behavior thresholds
-    QUICK_GUESS_THRESHOLD = float(os.getenv('QUICK_GUESS_THRESHOLD', 3.0))  # seconds
+    QUICK_GUESS_THRESHOLD = float(os.getenv('QUICK_GUESS_THRESHOLD', 3.0))
     MAX_HINTS_THRESHOLD = int(os.getenv('MAX_HINTS_THRESHOLD', 3))
     MANY_ATTEMPTS_THRESHOLD = int(os.getenv('MANY_ATTEMPTS_THRESHOLD', 3))
-    MIN_LOGIN_FREQUENCY = int(os.getenv('MIN_LOGIN_FREQUENCY', 3))  # per week
-    MIN_SESSION_DURATION = float(os.getenv('MIN_SESSION_DURATION', 5.0))  # minutes
-    LONG_INACTIVITY_THRESHOLD = int(os.getenv('LONG_INACTIVITY_THRESHOLD', 300))  # seconds
+    MIN_LOGIN_FREQUENCY = int(os.getenv('MIN_LOGIN_FREQUENCY', 3))
+    MIN_SESSION_DURATION = float(os.getenv('MIN_SESSION_DURATION', 5.0))
+    LONG_INACTIVITY_THRESHOLD = int(os.getenv('LONG_INACTIVITY_THRESHOLD', 300))
     
     # Engagement score weights
     ENGAGEMENT_IMPLICIT_WEIGHT = float(os.getenv('ENGAGEMENT_IMPLICIT_WEIGHT', 0.6))
@@ -175,7 +189,7 @@ class Config:
     POLL_AUTO_CLOSE_MINUTES = int(os.getenv('POLL_AUTO_CLOSE_MINUTES', 30))
     
     # Real-time update interval
-    POLL_UPDATE_INTERVAL = int(os.getenv('POLL_UPDATE_INTERVAL', 2))  # seconds
+    POLL_UPDATE_INTERVAL = int(os.getenv('POLL_UPDATE_INTERVAL', 2))
     
     # ========================================================================
     # FILE UPLOAD CONFIGURATION (BR9)
@@ -201,11 +215,11 @@ class Config:
     # ========================================================================
     
     # Data drop reduction
-    DATA_DROPS_PER_YEAR = int(os.getenv('DATA_DROPS_PER_YEAR', 3))  # Down from 6
+    DATA_DROPS_PER_YEAR = int(os.getenv('DATA_DROPS_PER_YEAR', 3))
     
     # Metrics refresh intervals
-    METRICS_CACHE_DURATION = int(os.getenv('METRICS_CACHE_DURATION', 3600))  # 1 hour
-    REALTIME_METRICS_INTERVAL = int(os.getenv('REALTIME_METRICS_INTERVAL', 30))  # seconds
+    METRICS_CACHE_DURATION = int(os.getenv('METRICS_CACHE_DURATION', 3600))
+    REALTIME_METRICS_INTERVAL = int(os.getenv('REALTIME_METRICS_INTERVAL', 30))
     
     # ========================================================================
     # RATE LIMITING
@@ -294,12 +308,9 @@ class DevelopmentConfig(Config):
     DEBUG = True
     TESTING = False
     
-    # Use local database
-    DATABASE_URI = os.getenv(
-        'DEV_DATABASE_URL',
-        'postgresql://amep_user:password@localhost:5432/amep_dev'
-    )
-    SQLALCHEMY_DATABASE_URI = DATABASE_URI
+    # Use local MongoDB
+    MONGODB_URI = os.getenv('DEV_MONGODB_URI', 'mongodb://localhost:27017/')
+    MONGODB_DB_NAME = os.getenv('DEV_MONGODB_DB_NAME', 'amep_dev')
     
     # Less strict rate limiting in dev
     RATELIMIT_ENABLED = False
@@ -310,12 +321,9 @@ class TestingConfig(Config):
     TESTING = True
     DEBUG = True
     
-    # Use test database
-    DATABASE_URI = os.getenv(
-        'TEST_DATABASE_URL',
-        'postgresql://amep_user:password@localhost:5432/amep_test'
-    )
-    SQLALCHEMY_DATABASE_URI = DATABASE_URI
+    # Use test MongoDB database
+    MONGODB_URI = os.getenv('TEST_MONGODB_URI', 'mongodb://localhost:27017/')
+    MONGODB_DB_NAME = os.getenv('TEST_MONGODB_DB_NAME', 'amep_test')
     
     # Disable CSRF for testing
     WTF_CSRF_ENABLED = False
